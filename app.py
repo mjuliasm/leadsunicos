@@ -74,6 +74,7 @@ def main():
             # Contar os leadId únicos por dia e userName
             agrupado = df.groupby(['Data', 'userName'])['leadId'].nunique().reset_index()
             agrupado.rename(columns={'leadId': 'Quantidade', 'userName': 'Usuário'}, inplace=True)
+            agrupado['Quantidade'] = agrupado['Quantidade'].astype(int)
             
             # Gráfico de linhas usando Altair
             chart = alt.Chart(agrupado).mark_line().encode(
@@ -94,7 +95,9 @@ def main():
             
             # Tabela com os dados dos Leads Únicos por Dia e Usuário
             st.write("Dados dos Leads Únicos por Dia e Usuário:")
-            st.table(agrupado.pivot(index='Usuário', columns='Data', values='Quantidade').fillna(0))
+            agrupado_pivot = agrupado.pivot(index='Usuário', columns='Data', values='Quantidade').fillna(0)
+            agrupado_pivot['Média'] = agrupado_pivot.mean(axis=1).round(1)
+            st.table(agrupado_pivot)
 
         except Exception as e:
             st.error(f"Erro ao recuperar registros: {e}")
@@ -105,3 +108,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+    # Adicionar texto no rodapé da barra lateral
+    st.sidebar.markdown("---")
+    st.sidebar.markdown("Desenvolvido por Maria Julia S. Morossini. \n \n Em caso de dúvida e/ou sugestão:\n maria.morossini@exactsales.com.br \n \n ou (48) 99625 1077.")
