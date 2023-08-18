@@ -66,7 +66,7 @@ def main():
             
             # Fazer o parsing correto da coluna startDate
             df['startDate'] = df['startDate'].apply(parse)
-            df['Data'] = df['startDate'].dt.date
+            df['Data'] = df['startDate'].dt.date  # Manter o formato original
             
             # Filtrar por data selecionada
             df = df[(df['Data'] >= selected_start_date) & (df['Data'] <= selected_end_date)]
@@ -77,7 +77,7 @@ def main():
             
             # Gráfico de linhas usando Altair
             chart = alt.Chart(agrupado).mark_line().encode(
-                x=alt.X('Data:T', title='Data'),
+                x=alt.X('Data:O', title='Data'),
                 y=alt.Y('Quantidade:Q', title='Quantidade'),
                 color='Usuário:N'
             ).properties(
@@ -91,6 +91,10 @@ def main():
             
             st.write("Evolução dos Leads Únicos por Dia e Usuário:")
             st.altair_chart(chart)
+            
+            # Tabela com os dados dos Leads Únicos por Dia e Usuário
+            st.write("Dados dos Leads Únicos por Dia e Usuário:")
+            st.table(agrupado.pivot(index='Usuário', columns='Data', values='Quantidade').fillna(0))
 
         except Exception as e:
             st.error(f"Erro ao recuperar registros: {e}")
