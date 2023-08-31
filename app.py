@@ -31,6 +31,10 @@ def get_records(token, start_date=None, end_date=None, skip=0):
 
             if data is not None and data.get('value'):
                 all_records.extend(data['value'])
+                num_records = len(data['value'])
+                if num_records < page_size:
+                    # Não há mais registros, sair do loop
+                    break
                 skip += page_size
             else:
                 # Não há mais registros ou 'data' é None, sair do loop
@@ -65,8 +69,11 @@ def main():
             df = df[['leadId', 'startDate', 'userName', 'manualSet']]
             
             # Fazer o parsing correto da coluna startDate
-            df['startDate'] = df['startDate'].apply(parse)
-            df['Data'] = df['startDate'].dt.date  # Manter o formato original
+            try:
+                df['startDate'] = df['startDate'].apply(parse)
+                df['Data'] = df['startDate'].dt.date
+            except Exception as e:
+                st.error(f"Erro ao converter datas: {e}")
             
             # Filtrar por data selecionada
             df = df[(df['Data'] >= selected_start_date) & (df['Data'] <= selected_end_date)]
