@@ -69,11 +69,8 @@ def main():
             df = df[['leadId', 'startDate', 'userName', 'manualSet']]
             
             # Fazer o parsing correto da coluna startDate
-            try:
-                df['startDate'] = df['startDate'].apply(parse)
-                df['Data'] = df['startDate'].dt.date
-            except Exception as e:
-                st.error(f"Erro ao converter datas: {e}")
+            df['startDate'] = df['startDate'].apply(parse)
+            df['Data'] = df['startDate'].dt.date
             
             # Filtrar por data selecionada
             df = df[(df['Data'] >= selected_start_date) & (df['Data'] <= selected_end_date)]
