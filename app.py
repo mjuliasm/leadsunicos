@@ -3,6 +3,8 @@ import requests
 import pandas as pd
 from dateutil.parser import parse
 import altair as alt
+import time
+import base64
 
 # Função para obter os registros usando apenas o token_exact
 def get_records(token, start_date=None, end_date=None, skip=0):
@@ -53,6 +55,9 @@ def main():
     selected_start_date = st.sidebar.date_input("Selecione a data de início")
     selected_end_date = st.sidebar.date_input("Selecione a data de fim")
 
+    # Adicione um campo de entrada para o atraso em segundos
+    delay_seconds = st.sidebar.number_input("Atraso em segundos antes da requisição à API", min_value=0, max_value=60, step=1)
+
     # Verificar se o token_exact é válido e se o botão "Calcular" foi pressionado
     if st.sidebar.button("Faça a mágica acontecer") and token_exact:
         if selected_start_date > selected_end_date:
@@ -60,6 +65,10 @@ def main():
             return
 
         try:
+            # Atraso antes da requisição à API
+            st.info(f"Aguardando {delay_seconds} segundos antes da requisição à API...")
+            time.sleep(delay_seconds)  # Aguarda o atraso
+
             records = get_records(
                 token=token_exact,
                 start_date=selected_start_date,
@@ -102,6 +111,13 @@ def main():
             agrupado_pivot = agrupado.pivot(index='Usuário', columns='Data', values='Quantidade').fillna(0)
             agrupado_pivot['Média'] = agrupado_pivot.mean(axis=1).round(1)
             st.table(agrupado_pivot)
+
+            # Adicione esta linha para permitir o download da tabela de dados
+            if st.button("Baixar Tabela de Dados"):
+                csv_data = df.to_csv(index=False)
+                b64 = base64.b64encode(csv_data.encode()).decode()
+                href = f'<a href="data:file/csv;base64,{b64}" download="tabela_dados.csv">Baixar CSV</a>'
+                st.markdown(href, unsafe_allow_html=True)
 
         except Exception as e:
             st.error(f"Erro ao recuperar registros: {e}")
